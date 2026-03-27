@@ -71,9 +71,36 @@
                 var q = searchInput.val();
 
                 if (q !== '') {
-                    api.get('suggest', {
-                            'q': q
-                        }, true)
+                    // Get package type from parent element data attribute
+                    var packageType = searchGroup.attr('data-package-type');
+                    var params = {
+                        'q': q
+                    };
+                    
+                    // Add package type to params if available
+                    if (packageType) {
+                        params['package_type'] = packageType;
+                    }
+
+                    // Add current URL filters (facets) to params
+                    if (window.URLSearchParams) {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        urlParams.forEach(function(value, key) {
+                            if (key !== 'q' && key !== 'package_type' && key !== 'sort' && key !== 'page') {
+                                if (params[key]) {
+                                    if (Array.isArray(params[key])) {
+                                        params[key].push(value);
+                                    } else {
+                                        params[key] = [params[key], value];
+                                    }
+                                } else {
+                                    params[key] = value;
+                                }
+                            }
+                        });
+                    }
+                    
+                    api.get('suggest', params, true)
                         .done(function(suggestData) {
                             if (suggestData.result) {
                                 var a, b;
@@ -88,13 +115,45 @@
 
                                 results.forEach(function(r) {
                                     b = document.createElement("DIV");
-                                    //                                        b.innerHTML = q;
-                                    b.innerHTML += "<strong>" + r + "</strong>";
-                                    b.addEventListener("click", function(e) {
-                                        closeAllLists();
-                                        searchInput.val(r);
-                                        searchInput.trigger("change");
-                                    });
+                                    
+                                    // Check if result is structured (has title, url) or just a string
+                                    if (typeof r === 'object' && r.title) {
+                                        // Structured result with title and URL
+                                        var titleHtml = "<strong>" + r.title + "</strong>";
+                                        if (r.type) {
+                                            titleHtml += " <span class='suggestion-type'>(" + r.type + ")</span>";
+                                        }
+                                        if (r.document_number) {
+                                            titleHtml += " <span class='suggestion-ref'>Ref: " + r.document_number.en + "</span>";
+                                        } 
+                                        b.innerHTML = titleHtml;
+                                        
+                                        // Store URL as data attribute for navigation
+                                        if (r.url) {
+                                            b.setAttribute('data-url', r.url);
+                                        }
+                                        
+                                        b.addEventListener("click", function(e) {
+                                            closeAllLists();
+                                            var url = this.getAttribute('data-url');
+                                            if (url) {
+                                                // Navigate directly to the URL
+                                                window.location.href = url;
+                                            } else {
+                                                // Fallback to populating search field
+                                                searchInput.val(r.title);
+                                                searchInput.trigger("change");
+                                            }
+                                        });
+                                    } else {
+                                        // Legacy string result
+                                        b.innerHTML += "<strong>" + r + "</strong>";
+                                        b.addEventListener("click", function(e) {
+                                            closeAllLists();
+                                            searchInput.val(r);
+                                            searchInput.trigger("change");
+                                        });
+                                    }
                                     a.append(b)
                                 });
                             }
@@ -140,8 +199,17 @@
             // ENTER key is pressed
             if (currentFocus > -1) {
                 e.preventDefault();
-                // simulate a click on the "active" item*
-                if (x) x[currentFocus].click();
+                // Get the active item
+                var activeItem = x[currentFocus];
+                // Check if it has a URL for direct navigation
+                var url = activeItem.getAttribute('data-url');
+                if (url) {
+                    // Navigate directly to the URL
+                    window.location.href = url;
+                } else {
+                    // Fallback to simulating click
+                    activeItem.click();
+                }
             }
         } else if (e.keyCode == 27) {
             closeAllLists();

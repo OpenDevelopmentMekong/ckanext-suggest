@@ -25,6 +25,17 @@
 .autocomplete-items strong {
   pointer-events: none;
 }
+
+.suggestion-type {
+  font-size: 0.8em;
+  color: #666;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.autocomplete-items .autocomplete-active .suggestion-type {
+  color: #ccc;
+}
 .control-order-by {
   display: inline-block;
   margin-left: 0;
