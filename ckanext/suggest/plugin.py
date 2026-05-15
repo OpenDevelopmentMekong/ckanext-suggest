@@ -1,14 +1,23 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import os
 
 from ckanext.suggest.logic.action.get import suggest
 import ckanext.suggest.cli as cli
 
 
-class SuggestPlugin(plugins.SingletonPlugin):
+try:
+    from ckan.lib.plugins import DefaultTranslation
+except ImportError:
+    class DefaultTranslation:
+        pass
+
+
+class SuggestPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IClick)
+    plugins.implements(plugins.ITranslation)
 
     # IConfigurer
 
@@ -28,3 +37,11 @@ class SuggestPlugin(plugins.SingletonPlugin):
 
     def get_commands(self):
         return cli.get_commands()
+
+    # ITranslation
+    def i18n_directory(self):
+        '''Change the directory of the .mo translation files'''
+        return os.path.join(
+            os.path.dirname(__file__),
+            'i18n'
+        )
