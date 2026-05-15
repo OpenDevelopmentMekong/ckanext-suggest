@@ -1,27 +1,52 @@
+/* Container for the search input and results */
 .search-input-group {
   position: relative;
 }
+
+/* The dropdown menu */
 .autocomplete-items {
   position: absolute;
-  top: 55px;
+  top: 100%;
   left: 0;
+  right: 0;
   background-color: #fff;
   width: 100%;
   z-index: 200;
-  border-bottom: 1px solid #E5E5E5;
-  border-right: 1px solid #E5E5E5;
-  border-left: 1px solid #E5E5E5;
+
+  /* --- Added Border Radius --- */
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.autocomplete-items .autocomplete-active {
-  background-color: #0072bc;
-  color: #fff;
-}
-.autocomplete-items > *:not(:last-child) {
-  border-bottom: 1px solid #E5E5E5;
-}
-.autocomplete-items > * {
+
+/* Individual suggestion items */
+.autocomplete-items > div {
   padding: 1rem 35px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
+
+/* Hover and Keyboard Active states - using your green theme */
+.autocomplete-items > div:hover,
+.autocomplete-items > div.autocomplete-active {
+  background-color: #65a30d !important;
+  color: #fff !important;
+}
+
+/* Adjust secondary text color on highlight */
+.autocomplete-items > div:hover .suggestion-type,
+.autocomplete-items > div.autocomplete-active .suggestion-type {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Borders between items */
+.autocomplete-items > div:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .autocomplete-items strong {
   pointer-events: none;
 }
@@ -33,38 +58,30 @@
   margin-left: 8px;
 }
 
-.autocomplete-items .autocomplete-active .suggestion-type {
-  color: #ccc;
-}
+/* --- Order By / Select Styling --- */
 .control-order-by {
   display: inline-block;
-  margin-left: 0;
   position: relative;
 }
+
 .control-order-by select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  padding-right: 3rem;
+  cursor: pointer;
 }
+
 .control-order-by:after {
   content: "";
   width: 0;
   height: 0;
   position: absolute;
   right: 16px;
+  top: 50%;
+  margin-top: -2px;
   border-style: solid;
-  background: #fff;
-  border-color: transparent #000;
+  border-width: 5px 5px 0 5px;
+  border-color: #000 transparent transparent transparent;
   pointer-events: none;
-  -webkit-transform: rotate(90deg);
-      -ms-transform: rotate(90deg);
-          transform: rotate(90deg);
-}
-.control-order-by:after {
-  top: 60%;
-  margin-top: -8px;
-  border-width: 4px 0 5px 5px;
-}
-.control-order-by select {
-  padding-right: 4rem;
 }

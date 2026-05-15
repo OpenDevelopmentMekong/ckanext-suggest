@@ -6,6 +6,7 @@ from http.client import HTTPException
 
 from ckan.logic import side_effect_free
 from ckan.lib.search import SolrSettings
+from ckan.common import _
 
 
 log = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ def suggest(context, data_dict):
     query = data_dict.get('q')
     package_type = data_dict.get('package_type')
     limit = data_dict.get('limit', 10)
+    lang = data_dict.get('lang', 'en')
 
     if not query:
         return []
@@ -48,7 +50,7 @@ def suggest(context, data_dict):
         fq_list.append(u'dataset_type:{}'.format(package_type))
         
     # Get all other parameters to use as filters
-    known_params = ['q', 'package_type', 'limit', 'suggest', 'build', 'callback', '_']
+    known_params = ['q', 'package_type', 'limit', 'lang', 'suggest', 'build', 'callback', '_']
     for key, value in data_dict.items():
         if key not in known_params and value:
             # Handle list values if multiple same keys are passed
@@ -67,7 +69,12 @@ def suggest(context, data_dict):
         results = []
         for pkg in search_result.get('results', []):
             pkg_type = pkg.get('type') or pkg.get('dataset_type', 'dataset')
-            title = pkg.get('title') or pkg.get('name')
+            # Get translated title if available
+            title_translated = pkg.get('title_translated', {})
+            if isinstance(title_translated, dict) and lang in title_translated:
+                title = title_translated[lang]
+            else:
+                title = pkg.get('title') or pkg.get('name')
             name = pkg.get('name')
             
             # Construct URL directly to the item
@@ -83,18 +90,24 @@ def suggest(context, data_dict):
             # Determine the display type name
             display_type = pkg_type.replace('_', ' ').title()
             
+            # Handle document number which may be a dict
+            doc_number = pkg.get('odm_document_number', '')
+            if isinstance(doc_number, dict):
+                # Try to get language-specific version
+                doc_number = doc_number.get(lang, doc_number.get('en', ''))
+            
             results.append({
                 'title': title,
                 'type': display_type,
                 'url': url,
                 'source': 'package_search',
                 'id': pkg.get('id', ''),
-                'document_number': pkg.get('odm_document_number', '')
+                'document_number': doc_number
             })
             
         return results
     except Exception as e:
-        log.error("Suggest search failed: {}".format(e))
+        log.error(_("Suggest search failed: {}").format(e))
         return []
 
 
