@@ -178,7 +178,7 @@ do:
     git clone https://github.com/keitaroinc/ckanext-suggest.git
     cd ckanext-suggest
     python setup.py develop
-    pip install -r dev-requirements.txt
+    pip install -r dev-requirements3000.txt
 
 
 ## Tests
