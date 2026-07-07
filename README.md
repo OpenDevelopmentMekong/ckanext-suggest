@@ -107,16 +107,68 @@ sudo service apache2 reload
 ```
 8. Build the lookup data structure in SOLR:
 ```commandline
-ckan -c /etc/ckan/default/ckan.ini suggest buid
+ckan -c /etc/ckan/default/ckan.ini suggest build
 ```
 9. Set up a CRON job that will update the lookup data structure on regular basis, for example:
 ```commandline
-@daily ckan -c /etc/ckan/default/ckan.ini suggest buid
+@daily ckan -c /etc/ckan/default/ckan.ini suggest build
 ```
 
 ## Config settings
 
 None at the moment.
+
+## Internationalization (i18n)
+
+ckanext-suggest supports multilingual search suggestions. The extension includes translations for error messages and can return translated titles for datasets.
+
+### Language parameter
+
+The `suggest` API action accepts an optional `lang` parameter (default: `'en'`). When provided, the extension will attempt to return dataset titles in the requested language using the `title_translated` field. If a translation is not available, it falls back to the default `title` field.
+
+Example API call:
+```json
+{
+  "q": "law",
+  "lang": "km"
+}
+```
+
+### Supported languages
+
+- English (`en`)
+- Khmer (`km`)
+- Thai (`th`)
+- Vietnamese (`vi`)
+- Burmese (`my`)
+- Lao (`lo`)
+
+### Translation files
+
+Translation files are located in `ckanext/suggest/i18n/`. To add or update translations:
+
+1. Edit the `.po` file for the target language.
+2. Compile to `.mo` using `msgfmt` or CKAN's translation tools.
+3. Restart CKAN.
+
+### Fallback behavior
+
+- If `lang` parameter is not provided, defaults to `'en'`.
+- If translated title is not available for the requested language, falls back to default `title`.
+- If `title_translated` field is missing or malformed, uses `title`.
+- Document numbers (`odm_document_number`) are also checked for language-specific values.
+
+### Search behavior
+
+The search query searches across all multilingual fields via Solr's `text` field, which includes translated content. No special configuration is needed for multilingual search.
+
+### Solr configuration for multilingual suggestions
+
+If you want Solr's suggest component to also index translated fields, you can add additional suggester entries in `solrconfig.xml` for fields like `title_translated_*`. However, the default `text` field already includes all translated content, so suggestions will work without modification.
+
+### Fallback when no data
+
+If a search query returns no results (empty list), the extension returns an empty array. The frontend will display no suggestions. This is the expected behavior for queries with no matches in any language.
 
 ## Developer installation
 
@@ -126,7 +178,7 @@ do:
     git clone https://github.com/keitaroinc/ckanext-suggest.git
     cd ckanext-suggest
     python setup.py develop
-    pip install -r dev-requirements.txt
+    pip install -r dev-requirements3000.txt
 
 
 ## Tests
