@@ -37,9 +37,13 @@ def suggest(context, data_dict):
     if not query:
         return []
     
-    # We use package_search to get actual records matching the query
+    # We use package_search to get actual records matching the query.
+    # NOTE: wildcard-phrase clauses like title:*"q"* ZERO the whole OR query
+    # in this Solr (verified live, en + km) — never use them. id:*<q>* also
+    # matches nothing (ids are uuids), so it is omitted. Infix + prefix
+    # wildcards per field are what actually match.
     search_data = {
-        'q': u'title:*"{0}"* OR title:*{0}* OR name:*{0}* OR id:*{0}* OR text:*{0}* OR "{0}" OR {0}*'.format(query),
+        'q': u'title:*{0}* OR title:{0}* OR name:*{0}* OR name:{0}* OR text:*{0}* OR text:{0}*'.format(query),
         'rows': limit,
         'sort': 'score desc, metadata_modified desc',
         'include_private': True

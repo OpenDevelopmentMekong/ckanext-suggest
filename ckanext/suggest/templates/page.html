@@ -1,11 +1,7 @@
+{# Pass-through override: assets are NOT loaded globally.
+   ckanext-suggest is wired to the ODC law search page only — see
+   odm_laws templates-2.10-odc/law_search.html which loads
+   {% asset 'suggest/suggest-css' %} and {% asset 'suggest/suggest-js' %}
+   explicitly. Keeping this file as a transparent override prevents the
+   suggest autocomplete from appearing on non-law search pages. #}
 {% ckan_extends %}
-
-{%- block styles %}
-  {{ super() }}
-  {% asset 'suggest/suggest-css' %}
-{% endblock -%}
-
-{%- block scripts %}
-  {{ super() }}
-  {% asset 'suggest/suggest-js' %}
-{% endblock -%}
