@@ -82,14 +82,17 @@ def suggest(context, data_dict):
             name = pkg.get('name')
             
             # Construct URL directly to the item
+            # locale=lang: API calls are locale-neutral, so url_for drops the
+            # /km or /en prefix — force it from the JS-passed lang param
+            # (verified 2026-08-28: url_for(..., locale='km') -> /km/...).
             try:
                 # E.g. laws_record.read
-                url = h.url_for(pkg_type + '.read', id=name)
+                url = h.url_for(pkg_type + '.read', id=name, locale=lang)
             except:
                 try:
-                    url = h.url_for('dataset.read', id=name)
+                    url = h.url_for('dataset.read', id=name, locale=lang)
                 except:
-                    url = '/{}/{}'.format(pkg_type, name)
+                    url = '/{}/{}'.format(lang, pkg_type, name)
             
             # Determine the display type name
             display_type = pkg_type.replace('_', ' ').title()
